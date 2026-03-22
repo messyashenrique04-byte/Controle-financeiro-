@@ -11,9 +11,298 @@ import {
   LayoutDashboard
 } from 'lucide-react';
 import { 
-  PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid
+  PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend
 } from 'recharts';
+
+// Definição de Estilos Inline para evitar erro de importação de CSS externo no Canvas
+const styles = `
+  :root {
+    --primary: #3b82f6;
+    --primary-dark: #1d4ed8;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --bg-main: #f8fafc;
+    --bg-card: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+  }
+
+  .app-container {
+    min-height: 100vh;
+    padding-bottom: 3rem;
+    font-family: sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+  }
+
+  .max-width-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  .main-header {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 0;
+    margin-bottom: 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 800;
+    font-size: 1.25rem;
+  }
+
+  .logo-icon { color: var(--primary); }
+
+  .date-filter-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-main);
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+  }
+
+  .date-input {
+    border: none;
+    background: transparent;
+    font-weight: 700;
+    color: var(--text-muted);
+    outline: none;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .card {
+    background: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .card-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .icon-box {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+  }
+
+  .bg-blue { background: #eff6ff; color: var(--primary); }
+  .bg-green { background: #ecfdf5; color: var(--success); }
+  .bg-red { background: #fef2f2; color: var(--danger); }
+
+  .amount-display {
+    font-size: 1.875rem;
+    font-weight: 900;
+  }
+
+  .text-success { color: var(--success); }
+  .text-danger { color: var(--danger); }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  @media (min-width: 1024px) {
+    .main-grid { grid-template-columns: 350px 1fr; }
+  }
+
+  .form-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.125rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group { margin-bottom: 1rem; }
+
+  .label-small {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+  }
+
+  .input-field {
+    width: 100%;
+    background: var(--bg-main);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    outline: none;
+  }
+
+  .currency-input-wrapper { position: relative; }
+  .currency-prefix {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+  .pl-10 { padding-left: 2.5rem; font-weight: 800; }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .toggle-group {
+    display: flex;
+    background: var(--bg-main);
+    padding: 0.25rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .toggle-btn {
+    flex: 1;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-muted);
+  }
+
+  .toggle-btn.active {
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  .toggle-btn.active.saida { color: var(--danger); }
+  .toggle-btn.active.entrada { color: var(--success); }
+
+  .btn-submit {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    padding: 0.875rem;
+    border: none;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  }
+
+  .chart-container {
+    height: 250px;
+    margin-top: 1rem;
+  }
+
+  .table-card {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .table-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .transaction-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .transaction-table th {
+    background: var(--bg-main);
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    padding: 1rem 1.5rem;
+    text-align: left;
+  }
+
+  .transaction-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .category-tag {
+    font-size: 0.65rem;
+    background: #f1f5f9;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 800;
+    color: var(--text-muted);
+  }
+
+  .action-btns {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.25rem;
+  }
+
+  .btn-icon {
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    color: var(--text-muted);
+  }
+
+  .empty-state {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .space-y {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+`;
 
 const CATEGORIES = [
   "Alimentação", "Transporte", "Moradia", "Lazer", "Saúde", "Salário", "Investimentos", "Outros"
@@ -38,18 +327,15 @@ const App = () => {
     type: 'saida'
   });
 
-  // Carregar dados salvos
   useEffect(() => {
-    const savedData = localStorage.getItem('finances_data_v3');
+    const savedData = localStorage.getItem('finly_data_v1');
     if (savedData) setTransactions(JSON.parse(savedData));
   }, []);
 
-  // Salvar dados automaticamente
   useEffect(() => {
-    localStorage.setItem('finances_data_v3', JSON.stringify(transactions));
+    localStorage.setItem('finly_data_v1', JSON.stringify(transactions));
   }, [transactions]);
 
-  // Formatação de moeda estilo digital (centavos automáticos)
   const formatCurrencyInput = (value) => {
     const cleanValue = value.replace(/\D/g, "");
     if (!cleanValue) return "";
@@ -97,7 +383,6 @@ const App = () => {
     const formattedAmount = transaction.amount.toFixed(2).replace('.', ',');
     setFormData({ ...transaction, amount: formattedAmount });
     setIsEditing(transaction.id);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const filteredTransactions = useMemo(() => 
@@ -127,228 +412,208 @@ const App = () => {
   }).format(v);
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-12 text-slate-900 font-sans">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 py-6 mb-8 sticky top-0 z-10 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <LayoutDashboard className="text-blue-600" size={28} />
-            <h1 className="text-xl font-bold tracking-tight">Finanças Online</h1>
+    <div className="app-container">
+      <style>{styles}</style>
+      <header className="main-header">
+        <div className="max-width-wrapper header-content">
+          <div className="logo-area">
+            <LayoutDashboard className="logo-icon" size={28} />
+            <span>Finly</span>
           </div>
-          <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg border border-slate-200">
-            <Calendar size={18} className="text-slate-500 ml-2" />
+          <div className="date-filter-wrapper">
+            <Calendar size={18} color="#64748b" />
             <input 
               type="month" 
               value={filterDate} 
               onChange={(e) => setFilterDate(e.target.value)} 
-              className="bg-transparent border-none outline-none text-sm font-bold text-slate-700 p-2 cursor-pointer" 
+              className="date-input" 
             />
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4">
-        {/* Sumário */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-            <div className="flex justify-between items-start mb-4">
-              <span className="p-2 bg-blue-50 text-blue-600 rounded-lg"><LayoutDashboard size={20}/></span>
-              <span className="text-xs font-bold text-slate-400 uppercase">Saldo Atual</span>
+      <main className="max-width-wrapper">
+        <div className="summary-grid">
+          <div className="card">
+            <div className="card-header">
+              <div className="icon-box bg-blue"><LayoutDashboard size={20}/></div>
+              <span className="card-label">Saldo Atual</span>
             </div>
-            <h2 className={`text-3xl font-black ${stats.income - stats.expense >= 0 ? 'text-slate-800' : 'text-rose-600'}`}>
+            <h2 className={`amount-display ${stats.income - stats.expense >= 0 ? '' : 'text-danger'}`}>
               {formatCurrency(stats.income - stats.expense)}
             </h2>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-            <div className="flex justify-between items-start mb-4">
-              <span className="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><ArrowUpCircle size={20}/></span>
-              <span className="text-xs font-bold text-slate-400 uppercase">Entradas</span>
+          <div className="card">
+            <div className="card-header">
+              <div className="icon-box bg-green"><ArrowUpCircle size={20}/></div>
+              <span className="card-label">Entradas</span>
             </div>
-            <h2 className="text-3xl font-black text-emerald-600">{formatCurrency(stats.income)}</h2>
+            <h2 className="amount-display text-success">{formatCurrency(stats.income)}</h2>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-            <div className="flex justify-between items-start mb-4">
-              <span className="p-2 bg-rose-50 text-rose-600 rounded-lg"><ArrowDownCircle size={20}/></span>
-              <span className="text-xs font-bold text-slate-400 uppercase">Saídas</span>
+          <div className="card">
+            <div className="card-header">
+              <div className="icon-box bg-red"><ArrowDownCircle size={20}/></div>
+              <span className="card-label">Saídas</span>
             </div>
-            <h2 className="text-3xl font-black text-rose-600">{formatCurrency(stats.expense)}</h2>
+            <h2 className="amount-display text-danger">{formatCurrency(stats.expense)}</h2>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Coluna Esquerda: Formulário */}
-          <div className="lg:col-span-1">
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm sticky top-28">
-              <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
-                <PlusCircle size={20} className="text-blue-600" />
-                {isEditing ? 'Editar Registro' : 'Novo Registro'}
-              </h3>
-              
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-black text-slate-400 uppercase mb-1">Valor</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">R$</span>
-                    <input 
-                      type="text" 
-                      name="amount" 
-                      value={formData.amount} 
-                      onChange={handleInputChange} 
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 pl-10 font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
-                      placeholder="0,00"
-                      required 
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-black text-slate-400 uppercase mb-1">Descrição</label>
+        <div className="main-grid">
+          <aside className="form-card card">
+            <h3 className="form-title">
+              <PlusCircle size={20} color="#3b82f6" />
+              {isEditing ? 'Editar Registo' : 'Novo Registo'}
+            </h3>
+            
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label className="label-small">Valor</label>
+                <div className="currency-input-wrapper">
+                  <span className="currency-prefix">R$</span>
                   <input 
                     type="text" 
-                    name="description" 
-                    value={formData.description} 
+                    name="amount" 
+                    value={formData.amount} 
                     onChange={handleInputChange} 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500" 
-                    placeholder="Ex: Aluguel, Mercado..." 
+                    className="input-field pl-10" 
+                    placeholder="0,00"
                     required 
                   />
                 </div>
+              </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-black text-slate-400 uppercase mb-1">Categoria</label>
-                    <select 
-                      name="category" 
-                      value={formData.category} 
-                      onChange={handleInputChange} 
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-black text-slate-400 uppercase mb-1">Data</label>
-                    <input 
-                      type="date" 
-                      name="date" 
-                      value={formData.date} 
-                      onChange={handleInputChange} 
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-500 text-sm" 
-                      required 
-                    />
-                  </div>
+              <div className="form-group">
+                <label className="label-small">Descrição</label>
+                <input 
+                  type="text" 
+                  name="description" 
+                  value={formData.description} 
+                  onChange={handleInputChange} 
+                  className="input-field" 
+                  placeholder="Ex: Aluguer, Compras..." 
+                  required 
+                />
+              </div>
+
+              <div className="form-row form-group">
+                <div>
+                  <label className="label-small">Categoria</label>
+                  <select name="category" value={formData.category} onChange={handleInputChange} className="input-field">
+                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
                 </div>
-
-                <div className="flex p-1 bg-slate-100 rounded-xl">
-                  <button 
-                    type="button" 
-                    onClick={() => setFormData({...formData, type: 'saida'})}
-                    className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${formData.type === 'saida' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500'}`}
-                  >
-                    Saída
-                  </button>
-                  <button 
-                    type="button" 
-                    onClick={() => setFormData({...formData, type: 'entrada'})}
-                    className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${formData.type === 'entrada' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500'}`}
-                  >
-                    Entrada
-                  </button>
+                <div>
+                  <label className="label-small">Data</label>
+                  <input type="date" name="date" value={formData.date} onChange={handleInputChange} className="input-field" required />
                 </div>
+              </div>
 
-                <div className="pt-2 flex gap-2">
-                  {isEditing && (
-                    <button 
-                      type="button" 
-                      onClick={() => { setIsEditing(null); setFormData({ amount: '', category: 'Alimentação', date: new Date().toISOString().split('T')[0], description: '', type: 'saida' }); }}
-                      className="flex-1 py-3 font-bold text-slate-500 bg-slate-100 rounded-xl hover:bg-slate-200"
-                    >
-                      Cancelar
-                    </button>
-                  )}
-                  <button type="submit" className="flex-[2] bg-blue-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all">
-                    {isEditing ? 'Atualizar' : 'Confirmar'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+              <div className="toggle-group">
+                <button 
+                  type="button" 
+                  onClick={() => setFormData({...formData, type: 'saida'})}
+                  className={`toggle-btn ${formData.type === 'saida' ? 'active saida' : ''}`}
+                >Saída</button>
+                <button 
+                  type="button" 
+                  onClick={() => setFormData({...formData, type: 'entrada'})}
+                  className={`toggle-btn ${formData.type === 'entrada' ? 'active entrada' : ''}`}
+                >Entrada</button>
+              </div>
 
-          {/* Coluna Direita: Gráficos e Tabela */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Gráficos */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-               <h3 className="text-sm font-black text-slate-400 uppercase mb-6 flex items-center gap-2">
-                <BarChart3 size={16} /> Gráfico de Despesas
+              <button type="submit" className="btn-submit">
+                {isEditing ? 'Atualizar Dados' : 'Confirmar Registo'}
+              </button>
+              
+              {isEditing && (
+                <button 
+                  type="button" 
+                  onClick={() => { setIsEditing(null); setFormData({ amount: '', category: 'Alimentação', date: new Date().toISOString().split('T')[0], description: '', type: 'saida' }); }}
+                  className="toggle-btn" 
+                  style={{ width: '100%', marginTop: '0.5rem' }}
+                >
+                  Cancelar Edição
+                </button>
+              )}
+            </form>
+          </aside>
+
+          <section className="space-y">
+            <div className="card">
+              <h3 className="card-label mb-4 flex items-center gap-2">
+                <BarChart3 size={16} /> Despesas por Categoria
               </h3>
-              <div className="w-full h-64">
+              <div className="chart-container">
                 {chartDataPie.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={chartDataPie} cx="50%" cy="50%" innerRadius={60} outerRadius={85} paddingAngle={5} dataKey="value">
-                        {chartDataPie.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                      <Pie 
+                        data={chartDataPie} 
+                        cx="50%" 
+                        cy="50%" 
+                        innerRadius={60} 
+                        outerRadius={80} 
+                        paddingAngle={5} 
+                        dataKey="value"
+                      >
+                        {chartDataPie.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
                       </Pie>
-                      <Tooltip formatter={(value) => formatCurrency(value)} />
+                      <Tooltip formatter={(v) => formatCurrency(v)} />
                       <Legend />
                     </PieChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-full flex items-center justify-center text-slate-400 italic text-sm">
-                    Adicione saídas para visualizar o gráfico.
-                  </div>
+                  <div className="empty-state">Adicione saídas para gerar o gráfico.</div>
                 )}
               </div>
             </div>
 
-            {/* Lista de Transações */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-                <h3 className="font-bold text-slate-700">Histórico de Transações</h3>
-                <button 
-                  onClick={() => { if(window.confirm("Deseja limpar todos os dados do sistema?")) setTransactions([]); }}
-                  className="text-slate-300 hover:text-rose-500 transition-colors"
-                  title="Resetar tudo"
-                >
-                  <RefreshCcw size={18} />
+            <div className="card table-card">
+              <div className="table-header">
+                <h3 style={{fontWeight: 'bold'}}>Histórico de Movimentações</h3>
+                <button className="btn-icon" title="Limpar Tudo" onClick={() => { if(window.confirm("Apagar todos os registos?")) setTransactions([]); }}>
+                  <RefreshCcw size={16}/>
                 </button>
               </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+              <div style={{overflowX: 'auto'}}>
+                <table className="transaction-table">
+                  <thead>
                     <tr>
-                      <th className="px-6 py-4">Descrição</th>
-                      <th className="px-6 py-4">Data</th>
-                      <th className="px-6 py-4">Valor</th>
-                      <th className="px-6 py-4 text-right">Ação</th>
+                      <th>Descrição</th>
+                      <th>Data</th>
+                      <th>Valor</th>
+                      <th style={{textAlign: 'right'}}>Ações</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {filteredTransactions.length > 0 ? filteredTransactions.map((t) => (
-                      <tr key={t.id} className="hover:bg-slate-50 transition-colors group">
-                        <td className="px-6 py-4">
-                          <p className="font-bold text-slate-700 leading-none mb-1">{t.description}</p>
-                          <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase font-bold">{t.category}</span>
+                  <tbody>
+                    {filteredTransactions.length > 0 ? filteredTransactions.map(t => (
+                      <tr key={t.id}>
+                        <td className="desc-cell">
+                          <div style={{fontWeight: 700, marginBottom: '0.25rem'}}>{t.description}</div>
+                          <span className="category-tag">{t.category}</span>
                         </td>
-                        <td className="px-6 py-4 text-xs text-slate-500">
-                          {new Date(t.date).toLocaleDateString('pt-BR')}
+                        <td style={{fontSize: '0.8rem', color: '#64748b'}}>
+                          {new Date(t.date).toLocaleDateString('pt-PT')}
                         </td>
-                        <td className={`px-6 py-4 font-black ${t.type === 'entrada' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        <td className={`amount-display ${t.type === 'entrada' ? 'text-success' : 'text-danger'}`} style={{fontSize: '1rem'}}>
                           {t.type === 'entrada' ? '+' : '-'} {formatCurrency(t.amount)}
                         </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => startEdit(t)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"><Edit2 size={14} /></button>
-                            <button onClick={() => deleteTransaction(t.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"><Trash2 size={14} /></button>
+                        <td>
+                          <div className="action-btns">
+                            <button className="btn-icon" onClick={() => startEdit(t)} title="Editar"><Edit2 size={14}/></button>
+                            <button className="btn-icon" onClick={() => deleteTransaction(t.id)} title="Eliminar"><Trash2 size={14}/></button>
                           </div>
                         </td>
                       </tr>
                     )) : (
                       <tr>
-                        <td colSpan="4" className="px-6 py-12 text-center">
-                          <p className="text-slate-400 text-sm">Nenhuma movimentação registada para este mês.</p>
+                        <td colSpan="4" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                          Nenhum registo encontrado para este mês.
                         </td>
                       </tr>
                     )}
@@ -356,7 +621,7 @@ const App = () => {
                 </table>
               </div>
             </div>
-          </div>
+          </section>
         </div>
       </main>
     </div>
